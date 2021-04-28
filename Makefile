@@ -1,5 +1,6 @@
 NAME = getline
 HEADER_PATH = ./
+HEADERS = get_next_line.h
 SRCS = ${wildcard *.c}
 OBJS = ${SRCS:.c=.o}
 CC = gcc

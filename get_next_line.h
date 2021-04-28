@@ -12,11 +12,19 @@ typedef struct		s_list
 	struct s_list   *next;
 }					t_list;
 
+typedef struct		s_buffer
+{
+	int				fd;
+	char			*buffer;
+	int				buf_size;
+}					t_buffer;
+
+
 //Gets next line from a file. 
 //A line is a charstring that ends with \n.
 int get_next_line(int fd, char **line);
-void	ft_lstadd_back(t_list **lst, t_list *new);
-t_list *ft_lstnew(void *content);
-void ft_lstdelone(t_list *lst, void (*del)(void*));
 
+//Finds a list node which contains corresponding buffer for fd
+t_list	*ft_fndbyfd(t_list *lst, int fd);
+void	*ft_memmove(void *dest, const void *src, size_t count);
 #endif
