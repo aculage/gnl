@@ -1,20 +1,5 @@
 #include "get_next_line.h"
 
-void	ft_lstadd_back(t_list **lst, t_list *new)
-{
-	t_list	*cur;
-
-	cur = *lst;
-	if (!*lst)
-		*lst = new;
-	else
-	{
-		while (cur->next != NULL)
-			cur = cur->next;
-		cur->next = new;
-	}
-	return ;
-}
 
 t_list	*ft_lstnew(void *content)
 {
@@ -27,19 +12,37 @@ t_list	*ft_lstnew(void *content)
 	return (ret);
 }
 
-t_list	*ft_fndbyfd(t_list *lst, int fd)
+t_buffer	*ft_getbyfd(t_list **lst, int fd)
 {
-	if (lst)
+	t_buffer	*newbuf;
+	t_list		*lcl;
+
+	newbuf = malloc(sizeof(t_buffer));
+	newbuf->buf_size = -2;
+	newbuf->fd = fd;
+	newbuf->eof = false;
+	if (*lst)
 	{
-		while (((t_buffer *)lst->content)->fd != fd)
+		lcl = *lst;
+		while (((t_buffer *)(lcl)->content)->fd != fd)
 		{
-			lst = lst->next;
-			if (!lst)
-				return (NULL);
+			if (!((lcl)->next))
+			{
+				lcl->next = ft_lstnew(newbuf);
+				return (newbuf);
+			}	
+			lcl = lcl->next;
 		}
 	}
-	return (lst);
+	else
+	{
+		*lst = ft_lstnew(newbuf);
+		return(newbuf);
+	}
+	return (lcl->content);
 }
+
+
 
 void	*ft_memmove(void *dest, const void *src, size_t count)
 {
@@ -64,4 +67,16 @@ void	*ft_memmove(void *dest, const void *src, size_t count)
 		}
 	}
 	return (dest);
+}
+
+int     ft_strlen(const char *str)
+{
+        int     cnt;
+
+        cnt = 0;
+        while (*(str + cnt) != 0)
+        {
+                cnt++;
+        }
+        return (cnt);
 }

@@ -4,64 +4,95 @@
 #include <unistd.h>
 //Locates endline in a char buffer
 //
-int	locate_endl(char *input, bool eof, int bufsize)
+int	locate_endl(char *input, int bufsize)
 {
 	int cnt;
 
+	cnt = 0;
 	while (cnt < bufsize)
 	{
-		if (input[cnt] == '\n' || input[cnt] == '\r')
+		if (input[cnt] == '\n')
 			return(cnt);
+		cnt++;
 	}
-	if (eof)
-		return (cnt);
-	return (-1);
+	return (cnt);
 }
 
-
-
-//Gets next line from file. Leaves rest of the buffer in the list with key = fd
-char	*ft_getline(int fd, int *status)
+//adds content of a char buffer to string str, resizing str
+char	*ft_stradd(char *str, char *buffer, int new_buf_size)
 {
-	char			*ret;
-	static char		buffer[BUFFER_SIZE];
-	bool			eof;
-	static int		bufsize = 0;
-	int				pos;
-
-
-	/*if (bufsize != 0)
+	char	*ret;
+	int		ptr;
+	ptr = 0;
+	ret = malloc(ft_strlen(str) + new_buf_size + 1);
+	if (!ret)
+		return (NULL);
+	while (ptr < ft_strlen(str))
 	{
-		pos = locate_endl(&buffer, false, bufsize);
-		if (pos != -1)
-			//realloc
-		else 
-		{
-			
-		}
-
-	}*/
-	if (bufsize == 0)
-	{	
-		bufsize = read(fd, buffer, BUFFER_SIZE);
-		pos = locate_endl(buffer, false, bufsize);
-		if (pos != -1)
-		{
-			ret = malloc(pos + 1);
-			ft_memmove(ret, buffer, pos);
-			*status = 1;
-			ft_memmove(buffer, buffer + pos + 1, bufsize - pos - 1);
-			bufsize = bufsize - pos - 1;
-		}
-		return(ret);
+		ret[ptr] = str[ptr];
+		ptr++;
 	}
-	return (NULL);
+	ptr = 0;
+	while (ptr < new_buf_size)
+	{
+		ret[ft_strlen(str) + ptr] = buffer[ptr];
+		ptr++;
+	}
+	ret[ft_strlen(str) + ptr] = 0;
+	free(str);
+	return (ret);
 }
 
-int get_next_line(int fd, char **line)
+//this function creates a string from a static buffer.
+//and also reads from corresponding fd into buffer
+char	*create_str(t_buffer *c_buf)
 {
-	int status;
+	char	*ret;
 
-	*line = ft_getline(fd, &status);
-	return(status);	
+	ret = malloc(1);
+	if (!ret)
+		return(NULL);
+	*ret = 0;
+	if (c_buf->buf_size == -2)
+	{
+		c_buf->buf_size = read(c_buf->fd, c_buf->buffer, BUFFER_SIZE);
+		c_buf->curr_pos = 0;
+	}
+	while (c_buf->buf_size > 0)
+	{
+		while(c_buf->curr_pos < c_buf->buf_size && c_buf->buffer[c_buf->curr_pos] != '\n')
+			c_buf->curr_pos++; //check for endline 
+		//locating endline or figuring out there is no endl
+		ret = ft_stradd(ret, c_buf->buffer + c_buf->prev_pos, c_buf->curr_pos - c_buf->prev_pos);
+		if (c_buf->curr_pos == c_buf->buf_size)
+		{
+			c_buf->curr_pos = 0;
+			c_buf->prev_pos = 0;
+			c_buf->buf_size = read(c_buf->fd, c_buf->buffer, BUFFER_SIZE);
+		}
+		else
+		{
+			(c_buf->curr_pos)++;
+			c_buf->prev_pos = c_buf->curr_pos;
+			return(ret);
+		}
+	}
+	return(ret);
+}
+
+int		get_next_line(int fd, char **line)
+{
+	static t_list	*lst = NULL; 
+	t_buffer		*current_buffer; // current buffer struct pointer
+
+	current_buffer = ft_getbyfd(&lst, fd);
+	*line = create_str(current_buffer);
+	if (current_buffer->buf_size == 0)
+		return (0);
+	if (current_buffer->buf_size == -1 || !(*line))
+	{
+		*line = NULL;
+		return (-1);
+	}
+	return(1);
 }
