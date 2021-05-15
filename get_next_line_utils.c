@@ -12,20 +12,36 @@ t_list	*ft_lstnew(void *content)
 	return (ret);
 }
 
-void	ft_rmlstelem( t_list *list, t_buffer *current_buffer)
+void	ft_rmlstelem( t_list **list, t_buffer *current_buffer)
 {
 	t_list	*to_del;
+	t_list	*curr;
 
 	if (!list)
 		return ;
-	while ((t_buffer *)(list->next->content) != current_buffer || list ->next != NULL)
+	to_del = NULL;
+	if ((t_buffer *)((*list)->content) == current_buffer)
 	{
-		list = list->next;
+		to_del = *list;
+		*list = (*list)->next;
 	}
-	if (list -> next != NULL)
+	else
 	{
-		to_del = list->next;
-		list->next = list->next->next;
+		curr = *list;
+		while (curr->next != NULL)
+		{
+			if((t_buffer *)(curr->next->content) != current_buffer)
+				break ;
+			curr = curr->next;
+		}
+		if (curr -> next != NULL)
+		{
+			to_del = curr->next;
+			curr->next = curr->next->next;
+		}
+	}
+	if (to_del)
+	{
 		free(to_del->content);
 		free(to_del);
 	}
@@ -63,6 +79,7 @@ t_buffer	*ft_getbyfd(t_list **lst, int fd)
 		*lst = ft_lstnew(newbuf);
 		return(newbuf);
 	}
+	free(newbuf);
 	return (lcl->content);
 }
 

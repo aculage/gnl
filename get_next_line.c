@@ -8,23 +8,30 @@ char	*ft_stradd(char *str, char *buffer, int new_buf_size)
 {
 	char	*ret;
 	int		ptr;
-
+	int		slen;
+	
 	ptr = 0;
-	ret = malloc(ft_strlen(str) + new_buf_size + 1);
+	slen = 0;
+	if (str)
+		slen = ft_strlen(str);
+	ret = malloc(slen + new_buf_size + 1);
 	if (!ret)
 		return (NULL);
-	while (ptr < ft_strlen(str))
+	if (str)
 	{
-		ret[ptr] = str[ptr];
-		ptr++;
+		while (ptr < slen)
+		{
+			ret[ptr] = str[ptr];
+			ptr++;
+		}
 	}
 	ptr = 0;
 	while (ptr < new_buf_size)
 	{
-		ret[ft_strlen(str) + ptr] = buffer[ptr];
+		ret[slen + ptr] = buffer[ptr];
 		ptr++;
 	}
-	ret[ft_strlen(str) + new_buf_size] = 0;
+	ret[slen + new_buf_size] = 0;
 	free(str);
 	return (ret);
 }
@@ -79,12 +86,18 @@ int		get_next_line(int fd, char **line)
 	*line = create_str(current_buffer);
 	if (current_buffer->buf_size == 0)
 	{
-		//ft_rmlstelem(current_buffer);
+		ft_rmlstelem(&lst, current_buffer);
 		return (0);
 	}
-	if (current_buffer->buf_size == -1 || !(*line))
+	if (current_buffer->buf_size == -1)
 	{
-		*line = NULL;
+		ft_rmlstelem(&lst, current_buffer);
+		free(*line);
+		return (-1);
+	}
+	if (!(*line))
+	{
+		ft_rmlstelem(&lst, current_buffer);
 		return (-1);
 	}
 	return (1);

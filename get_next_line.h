@@ -28,6 +28,7 @@ typedef struct		s_buffer
 //Gets next line from a file. 
 //A line is a charstring that ends with \n.
 int 		get_next_line(int fd, char **line);
+void	ft_rmlstelem( t_list **list, t_buffer *current_buffer);
 
 //Finds a list node which contains corresponding buffer for fd
 //If a list node is nonexistent - creates a new node with empty buffer
