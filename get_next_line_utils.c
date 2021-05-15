@@ -12,15 +12,39 @@ t_list	*ft_lstnew(void *content)
 	return (ret);
 }
 
+void	ft_rmlstelem( t_list *list, t_buffer *current_buffer)
+{
+	t_list	*to_del;
+
+	if (!list)
+		return ;
+	while ((t_buffer *)(list->next->content) != current_buffer || list ->next != NULL)
+	{
+		list = list->next;
+	}
+	if (list -> next != NULL)
+	{
+		to_del = list->next;
+		list->next = list->next->next;
+		free(to_del->content);
+		free(to_del);
+	}
+	return ;
+}
+
 t_buffer	*ft_getbyfd(t_list **lst, int fd)
 {
 	t_buffer	*newbuf;
 	t_list		*lcl;
 
 	newbuf = malloc(sizeof(t_buffer));
+	if (!newbuf)
+		return(newbuf);
 	newbuf->buf_size = -2;
 	newbuf->fd = fd;
 	newbuf->eof = false;
+	newbuf->prev_pos = 0;
+	newbuf->curr_pos = 0;
 	if (*lst)
 	{
 		lcl = *lst;
@@ -40,33 +64,6 @@ t_buffer	*ft_getbyfd(t_list **lst, int fd)
 		return(newbuf);
 	}
 	return (lcl->content);
-}
-
-
-
-void	*ft_memmove(void *dest, const void *src, size_t count)
-{
-	int	shft;
-
-	shft = 0;
-	if (src > dest)
-	{
-		while (shft < (int) count)
-		{
-			*((unsigned char *)dest + shft) = *((unsigned char *)src + shft);
-			shft++;
-		}
-	}
-	if (src < dest)
-	{
-		shft = count - 1 ;
-		while (shft >= 0)
-		{
-			*((unsigned char *)dest + shft) = *((unsigned char *)src + shft);
-			shft--;
-		}
-	}
-	return (dest);
 }
 
 int     ft_strlen(const char *str)

@@ -2,27 +2,13 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
-//Locates endline in a char buffer
-//
-int	locate_endl(char *input, int bufsize)
-{
-	int cnt;
-
-	cnt = 0;
-	while (cnt < bufsize)
-	{
-		if (input[cnt] == '\n')
-			return(cnt);
-		cnt++;
-	}
-	return (cnt);
-}
 
 //adds content of a char buffer to string str, resizing str
 char	*ft_stradd(char *str, char *buffer, int new_buf_size)
 {
 	char	*ret;
 	int		ptr;
+
 	ptr = 0;
 	ret = malloc(ft_strlen(str) + new_buf_size + 1);
 	if (!ret)
@@ -38,7 +24,7 @@ char	*ft_stradd(char *str, char *buffer, int new_buf_size)
 		ret[ft_strlen(str) + ptr] = buffer[ptr];
 		ptr++;
 	}
-	ret[ft_strlen(str) + ptr] = 0;
+	ret[ft_strlen(str) + new_buf_size] = 0;
 	free(str);
 	return (ret);
 }
@@ -64,6 +50,8 @@ char	*create_str(t_buffer *c_buf)
 			c_buf->curr_pos++; //check for endline 
 		//locating endline or figuring out there is no endl
 		ret = ft_stradd(ret, c_buf->buffer + c_buf->prev_pos, c_buf->curr_pos - c_buf->prev_pos);
+		if (!ret)
+			return(NULL);
 		if (c_buf->curr_pos == c_buf->buf_size)
 		{
 			c_buf->curr_pos = 0;
@@ -86,13 +74,18 @@ int		get_next_line(int fd, char **line)
 	t_buffer		*current_buffer; // current buffer struct pointer
 
 	current_buffer = ft_getbyfd(&lst, fd);
+	if (!current_buffer)
+		return (-1);
 	*line = create_str(current_buffer);
 	if (current_buffer->buf_size == 0)
+	{
+		//ft_rmlstelem(current_buffer);
 		return (0);
+	}
 	if (current_buffer->buf_size == -1 || !(*line))
 	{
 		*line = NULL;
 		return (-1);
 	}
-	return(1);
+	return (1);
 }
