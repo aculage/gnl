@@ -9,7 +9,7 @@ char	*ft_stradd(char *str, char *buffer, int new_buf_size)
 	char	*ret;
 	int		ptr;
 	int		slen;
-	
+
 	ptr = 0;
 	slen = 0;
 	if (str)
@@ -17,13 +17,10 @@ char	*ft_stradd(char *str, char *buffer, int new_buf_size)
 	ret = malloc(slen + new_buf_size + 1);
 	if (!ret)
 		return (NULL);
-	if (str)
+	while (ptr < slen)
 	{
-		while (ptr < slen)
-		{
-			ret[ptr] = str[ptr];
-			ptr++;
-		}
+		ret[ptr] = str[ptr];
+		ptr++;
 	}
 	ptr = 0;
 	while (ptr < new_buf_size)
@@ -36,6 +33,24 @@ char	*ft_stradd(char *str, char *buffer, int new_buf_size)
 	return (ret);
 }
 
+//this function shifts current position in a buffer to a new endline
+void	shift_ptr(t_buffer *c_buf)
+{
+	while (c_buf->curr_pos < c_buf->buf_size
+		&& c_buf->buffer[c_buf->curr_pos] != '\n')
+		c_buf->curr_pos++;
+	return ;
+}
+
+//this function reads a new buffer with certain precautions
+void	buf_readify(t_buffer *c_buf)
+{
+	c_buf->curr_pos = 0;
+	c_buf->prev_pos = 0;
+	c_buf->buf_size = read(c_buf->fd, c_buf->buffer, BUFFER_SIZE);
+	return ;
+}
+
 //this function creates a string from a static buffer.
 //and also reads from corresponding fd into buffer
 char	*create_str(t_buffer *c_buf)
@@ -44,41 +59,32 @@ char	*create_str(t_buffer *c_buf)
 
 	ret = malloc(1);
 	if (!ret)
-		return(NULL);
+		return (NULL);
 	*ret = 0;
 	if (c_buf->buf_size == -2)
-	{
-		c_buf->buf_size = read(c_buf->fd, c_buf->buffer, BUFFER_SIZE);
-		c_buf->curr_pos = 0;
-	}
+		buf_readify(c_buf);
 	while (c_buf->buf_size > 0)
 	{
-		while(c_buf->curr_pos < c_buf->buf_size && c_buf->buffer[c_buf->curr_pos] != '\n')
-			c_buf->curr_pos++; //check for endline 
-		//locating endline or figuring out there is no endl
-		ret = ft_stradd(ret, c_buf->buffer + c_buf->prev_pos, c_buf->curr_pos - c_buf->prev_pos);
+		shift_ptr(c_buf);
+		ret = ft_stradd(ret, c_buf->buffer + c_buf->prev_pos,
+				c_buf->curr_pos - c_buf->prev_pos);
 		if (!ret)
-			return(NULL);
+			return (NULL);
 		if (c_buf->curr_pos == c_buf->buf_size)
-		{
-			c_buf->curr_pos = 0;
-			c_buf->prev_pos = 0;
-			c_buf->buf_size = read(c_buf->fd, c_buf->buffer, BUFFER_SIZE);
-		}
+			buf_readify(c_buf);
 		else
 		{
-			(c_buf->curr_pos)++;
-			c_buf->prev_pos = c_buf->curr_pos;
-			return(ret);
+			c_buf->prev_pos = ++c_buf->curr_pos;
+			return (ret);
 		}
 	}
-	return(ret);
+	return (ret);
 }
 
-int		get_next_line(int fd, char **line)
+int	get_next_line(int fd, char **line)
 {
-	static t_list	*lst = NULL; 
-	t_buffer		*current_buffer; // current buffer struct pointer
+	static t_list	*lst = NULL;
+	t_buffer		*current_buffer;
 
 	current_buffer = ft_getbyfd(&lst, fd);
 	if (!current_buffer)

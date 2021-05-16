@@ -1,9 +1,9 @@
 #include "get_next_line_bonus.h"
 
-
 t_list	*ft_lstnew(void *content)
 {
-	t_list *ret;
+	t_list	*ret;
+
 	ret = malloc(sizeof(t_list));
 	if (!ret)
 		return (NULL);
@@ -12,36 +12,57 @@ t_list	*ft_lstnew(void *content)
 	return (ret);
 }
 
-void	ft_rmlstelem( t_list **list, t_buffer *current_buffer)
+//sets to first arg pointer to PREVIOUS element of the one to be found
+//this is to easily remove one
+//if list is empty or you pass a NULL, func return is false, *elem is NULL
+//if element is located in the HEAD of the list, HEAD is set instead
+//if element is not located, func return is false, but *elem is last element
+//it is up to you to check for it
+bool	ft_lstlocate(t_list **elem, t_list *list, int fd)
+{
+	*elem = NULL;
+	if (!list)
+		return (false);
+	if (((t_buffer *)(list->content))->fd != fd)
+	{
+		if (!(list->next))
+		{
+			*elem = list;
+			return (false);
+		}
+		while (((t_buffer *)(list->next->content))->fd != fd)
+		{
+			list = list->next;
+			if (!(list->next))
+			{
+				*elem = list;
+				return (false);
+			}
+		}
+	}
+	*elem = list;
+	return (true);
+}
+
+void	ft_rmlstelem(t_list **list, t_buffer *current_buffer)
 {
 	t_list	*to_del;
 	t_list	*curr;
 
 	if (!list)
 		return ;
-	to_del = NULL;
-	if ((t_buffer *)((*list)->content) == current_buffer)
+	if (ft_lstlocate(&curr, *list, current_buffer->fd))
 	{
-		to_del = *list;
-		*list = (*list)->next;
-	}
-	else
-	{
-		curr = *list;
-		while (curr->next != NULL)
+		if (curr->content == current_buffer)
 		{
-			if((t_buffer *)(curr->next->content) == current_buffer)
-				break ;
-			curr = curr->next;
+			*list = (*list)->next;
+			to_del = curr;
 		}
-		if (curr -> next != NULL)
+		else
 		{
 			to_del = curr->next;
 			curr->next = curr->next->next;
 		}
-	}
-	if (to_del)
-	{
 		free(to_del->content);
 		free(to_del);
 	}
@@ -55,42 +76,33 @@ t_buffer	*ft_getbyfd(t_list **lst, int fd)
 
 	newbuf = malloc(sizeof(t_buffer));
 	if (!newbuf)
-		return(newbuf);
+		return (newbuf);
 	newbuf->buf_size = -2;
 	newbuf->fd = fd;
 	newbuf->eof = false;
-	newbuf->prev_pos = 0;
-	newbuf->curr_pos = 0;
-	if (*lst)
+	if (ft_lstlocate(&lcl, *lst, fd))
 	{
-		lcl = *lst;
-		while (((t_buffer *)(lcl)->content)->fd != fd)
-		{
-			if (!((lcl)->next))
-			{
-				lcl->next = ft_lstnew(newbuf);
-				return (newbuf);
-			}	
-			lcl = lcl->next;
-		}
+		free (newbuf);
+		if (((t_buffer *)(lcl->content))->fd == fd)
+			return (lcl->content);
+		else
+			return (lcl->next->content);
 	}
+	if (lcl)
+		lcl->next = ft_lstnew(newbuf);
 	else
-	{
 		*lst = ft_lstnew(newbuf);
-		return(newbuf);
-	}
-	free(newbuf);
-	return (lcl->content);
+	return (newbuf);
 }
 
-int     ft_strlen(const char *str)
+int	ft_strlen(const char *str)
 {
-        int     cnt;
+	int	cnt;
 
-        cnt = 0;
-        while (*(str + cnt) != 0)
-        {
-                cnt++;
-        }
-        return (cnt);
+	cnt = 0;
+	while (*(str + cnt) != 0)
+	{
+		cnt++;
+	}
+	return (cnt);
 }
