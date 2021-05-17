@@ -6,8 +6,12 @@ t_list	*ft_lstnew(void *content)
 
 	ret = malloc(sizeof(t_list));
 	if (!ret)
+	{
+		free(*(t_buffer **)content);
+		*(t_buffer **)content = NULL;
 		return (NULL);
-	ret->content = content;
+	}
+	ret->content = *(t_buffer **)content;
 	ret->next = NULL;
 	return (ret);
 }
@@ -89,9 +93,9 @@ t_buffer	*ft_getbyfd(t_list **lst, int fd)
 			return (lcl->next->content);
 	}
 	if (lcl)
-		lcl->next = ft_lstnew(newbuf);
+		lcl->next = ft_lstnew(&newbuf);
 	else
-		*lst = ft_lstnew(newbuf);
+		*lst = ft_lstnew(&newbuf);
 	return (newbuf);
 }
 
