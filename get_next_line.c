@@ -90,7 +90,7 @@ int	get_next_line(int fd, char **line)
 	if (!current_buffer)
 		return (-1);
 	*line = create_str(current_buffer);
-	if (current_buffer->buf_size == 0 && current_buffer->curr_pos == 0)
+	if (current_buffer->buf_size == 0)
 	{
 		ft_rmlstelem(&lst, current_buffer);
 		return (0);
